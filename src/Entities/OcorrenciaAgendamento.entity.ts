@@ -31,16 +31,10 @@ export class OcorrenciaAgendamento {
   })
   status: OcorrenciaStatus;
 
-  // Relacionamento ManyToOne com Servico (se um serviço específico for associado à ocorrência)
+  // Relacionamento ManyToOne com Servico
   // Uma ocorrência pode ter um serviço específico associado
   @ManyToOne(() => Servico, (servico) => servico.ocorrencias, { nullable: true }) // Assumindo que um serviço pode ter várias ocorrências
   @JoinColumn({ name: 'servico_id' })
   servico: Servico;
 
-  // Você pode adicionar outras colunas conforme necessário, como:
-  // @Column({ type: 'time', nullable: true })
-  // hora_inicio: string;
-  //
-  // @Column({ type: 'time', nullable: true })
-  // hora_fim: string;
 }

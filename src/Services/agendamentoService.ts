@@ -5,12 +5,12 @@ import { Agendamento } from '../Entities/Agentamento.entity';
 import { ClienteDao } from '../Daos/clienteDao';
 import { ServicoDao } from '../Daos/servicoDao';
 import {
-  OcorrenciaAgendamento,
-  OcorrenciaStatus,
+  OcorrenciaAgendamento
 } from '../Entities/OcorrenciaAgendamento.entity';
 import { Servico } from '../Entities/Servico.Entity';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAgendamentoDto } from '../Dtos/createAgendamentoDto';
+import { OcorrenciaStatus } from '../Enum/OcorrenciaStatusEnum';
 
 @Injectable()
 export class AgendamentoService {
