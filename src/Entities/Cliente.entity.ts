@@ -5,7 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, OneToMany,
+  DeleteDateColumn, OneToMany, JoinColumn,
 } from 'typeorm';
 import { Diarista } from './Diarista.entity';
 import { Agendamento } from './Agentamento.entity'; // Ajuste o caminho conforme sua estrutura
@@ -28,6 +28,7 @@ export class Cliente {
   preferencias: string;
 
   @ManyToOne(() => Diarista, (diarista) => diarista.clientes, { nullable: false })
+  @JoinColumn({ name: 'diarista_id' })
   diarista: Diarista;
 
   // Nova relação: Um cliente pode ter muitos agendamentos

@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { Cliente } from './Cliente.entity'; // Ajuste o caminho conforme sua estrutura
-import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity'; // Importe a OcorrenciaAgendamento
+import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity';
+import { FrequenciaAgendamento } from '../Enum/FrequenciaOcorrenciaEnum'; // Importe a OcorrenciaAgendamento
 
 @Entity('agendamentos') // Nome da tabela no banco de dados
 export class Agendamento {
@@ -10,6 +11,7 @@ export class Agendamento {
   // Relacionamento ManyToOne com Cliente
   // Muitos agendamentos podem pertencer a um único cliente
   @ManyToOne(() => Cliente, (cliente) => cliente.agendamentos, { nullable: false })
+  @JoinColumn({ name: 'cliente_id' })
   cliente: Cliente; // O documento menciona cliente_id, então precisamos da relação com Cliente
 
   @Column({ type: 'date', nullable: false }) // Data de início do agendamento (rotina)
@@ -18,8 +20,12 @@ export class Agendamento {
   @Column({ type: 'date', nullable: false}) // Data de fim do agendamento (rotina) - pode ser nula para agendamentos contínuos
   data_fim: Date;
 
-  @Column({ nullable: false }) // Frequência pode ser nula se for um agendamento único
-  frequencia: string; // Ex: 'semanal', 'quinzenal', 'mensal' (conforme a visão geral do sistema)
+  @Column({
+    type: 'enum',
+    enum: FrequenciaAgendamento,
+    nullable: false,
+  })
+  frequencia: FrequenciaAgendamento;
 
   @Column({ default: false }) // Indica se o agendamento foi removido (soft delete)
   removido: boolean;

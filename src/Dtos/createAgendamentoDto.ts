@@ -1,4 +1,5 @@
-import { IsDateString, IsInt, IsBoolean, IsNumber, IsOptional, IsString, IsNotEmpty } from 'class-validator';
+import { IsDateString, IsInt, IsBoolean, IsNumber, IsOptional, IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import { OcorrenciaStatus } from '../Enum/OcorrenciaStatusEnum';
 
 export class CreateAgendamentoDto {
   @IsInt()
@@ -13,6 +14,7 @@ export class CreateAgendamentoDto {
   @IsNotEmpty()
   data_fim?: string; // String para receber do frontend
 
+  @IsEnum(OcorrenciaStatus, { message: 'Frequência inválida' })
   @IsString()
   frequencia?: 'semanal' | 'quinzenal' | 'mensal'; // Tipagem mais específica
 
@@ -29,4 +31,3 @@ export class CreateAgendamentoDto {
   valor_extra?: number;
 }
 
-//export class UpdateAgendamentoDto extends PartialType(CreateAgendamentoDto) {} // Use PartialType do @nestjs/mapped-types

@@ -11,6 +11,7 @@ import { Servico } from '../Entities/Servico.Entity';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAgendamentoDto } from '../Dtos/createAgendamentoDto';
 import { OcorrenciaStatus } from '../Enum/OcorrenciaStatusEnum';
+import { FrequenciaAgendamento } from '../Enum/FrequenciaOcorrenciaEnum';
 
 @Injectable()
 export class AgendamentoService {
@@ -53,6 +54,12 @@ export class AgendamentoService {
       );
     }
 
+    if (frequencia && !Object.values(FrequenciaAgendamento).includes(frequencia as FrequenciaAgendamento)) {
+      throw new BadRequestException(
+        `Frequência inválida: ${frequencia}. Valores permitidos: ${Object.values(FrequenciaAgendamento).join(', ')}`,
+      );
+    }
+
     const parsedDataInicio = dayjs(data_inicio).startOf('day').toDate();
     const parsedDataFim = dayjs(data_fim).endOf('day').toDate();
 
@@ -67,7 +74,7 @@ export class AgendamentoService {
       cliente: cliente,
       data_inicio: parsedDataInicio,
       data_fim: parsedDataFim,
-      frequencia: frequencia, // Garante que seja null se não fornecido
+      frequencia: frequencia as FrequenciaAgendamento, // Garante que seja null se não fornecido
       removido: false,
     };
     const savedAgendamento = await this.agendamentoDao.create(agendamentoData);
@@ -102,7 +109,7 @@ export class AgendamentoService {
 
     // Loop para gerar ocorrências
     while (true) {
-      if (endDate && currentDate > endDate) {
+      if (currentDate > endDate) {
         break; // Sai do loop se a data atual ultrapassar a data de fim
       }
 

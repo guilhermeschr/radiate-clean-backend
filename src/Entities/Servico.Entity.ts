@@ -5,7 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, OneToMany,
+  DeleteDateColumn, OneToMany, JoinColumn,
 } from 'typeorm';
 import { Diarista } from './Diarista.entity';
 import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity'; // Ajuste o caminho conforme sua estrutura
@@ -19,14 +19,15 @@ export class Servico {
   descricao: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-  valorMeiaDiaria: number; // Valor para meia diária
+  valor_meia_diaria: number; // Valor para meia diária
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-  valorDiaria: number; // Valor para diária inteira
+  valor_diaria: number; // Valor para diária inteira
 
   // Relação ManyToOne com Diarista
   // Muitos serviços podem pertencer a uma única diarista
   @ManyToOne(() => Diarista, (diarista) => diarista.servicos, { nullable: false })
+  @JoinColumn({ name: 'diarista_id' })
   diarista: Diarista;
 
   // Nova relação: Um serviço pode estar associado a muitas ocorrências de agendamento
