@@ -5,7 +5,9 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, OneToMany, JoinColumn,
+  DeleteDateColumn,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Diarista } from './Diarista.entity';
 import { Agendamento } from './Agentamento.entity'; // Ajuste o caminho conforme sua estrutura
@@ -21,26 +23,27 @@ export class Cliente {
   @Column({ nullable: false })
   telefone: string;
 
-  @Column({ nullable: true }) // Pode ser nulo
+  @Column({ nullable: true })
   endereco: string;
 
-  @Column({ nullable: true }) // Pode ser nulo
+  @Column({ nullable: true })
   preferencias: string;
 
-  @ManyToOne(() => Diarista, (diarista) => diarista.clientes, { nullable: false })
+  @ManyToOne(() => Diarista, (diarista) => diarista.clientes, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'diarista_id' })
   diarista: Diarista;
 
-  // Nova relação: Um cliente pode ter muitos agendamentos
   @OneToMany(() => Agendamento, (agendamento) => agendamento.cliente)
   agendamentos: Agendamento[];
 
   @CreateDateColumn()
-  created_at: Date; // Creation date
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date; // Last updated date
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date; // Deletion date
+  deleted_at: Date;
 }

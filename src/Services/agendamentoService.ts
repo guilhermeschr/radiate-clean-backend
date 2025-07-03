@@ -2,24 +2,26 @@ import dayjs from 'dayjs';
 import { AgendamentoDao } from '../Daos/agendamentoDao';
 import { OcorrenciaAgendamentoDao } from '../Daos/ocorrenciaAgendamentoDao';
 import { Agendamento } from '../Entities/Agentamento.entity';
-import { ClienteDao } from '../Daos/clienteDao';
-import { ServicoDao } from '../Daos/servicoDao';
-import {
-  OcorrenciaAgendamento
-} from '../Entities/OcorrenciaAgendamento.entity';
+import { OcorrenciaAgendamento } from '../Entities/OcorrenciaAgendamento.entity';
 import { Servico } from '../Entities/Servico.Entity';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAgendamentoDto } from '../Dtos/createAgendamentoDto';
 import { OcorrenciaStatus } from '../Enum/OcorrenciaStatusEnum';
-import { FrequenciaAgendamento } from '../Enum/FrequenciaOcorrenciaEnum';
+import { FrequenciaAgendamentoEnum } from '../Enum/FrequenciaOcorrenciaEnum';
+import { ClienteService } from './clienteService';
+import { ServicoService } from './servicoService';
 
 @Injectable()
 export class AgendamentoService {
   constructor(
     private readonly agendamentoDao: AgendamentoDao,
     private readonly ocorrenciaAgendamentoDao: OcorrenciaAgendamentoDao,
-    private readonly clienteDao: ClienteDao, // Injetando ClienteDao para buscar o cliente
-    private readonly servicoDao: ServicoDao, // Injetando ServicoDao para buscar o serviço
+    private readonly clienteService: ClienteService,
+    private readonly servicoService: ServicoService,
   ) {}
 
   /**
@@ -40,25 +42,10 @@ export class AgendamentoService {
       valor_extra,
     } = createAgendamentoDto;
 
-    const cliente = await this.clienteDao.findOne(clienteId);
-    if (!cliente) {
-      throw new NotFoundException(
-        `Cliente com ID ${clienteId} não encontrado.`,
-      );
-    }
-
-    const servico = await this.servicoDao.findOne(servicoId);
-    if (!servico) {
-      throw new NotFoundException(
-        `Serviço com ID ${servicoId} não encontrado.`,
-      );
-    }
-
-    if (frequencia && !Object.values(FrequenciaAgendamento).includes(frequencia as FrequenciaAgendamento)) {
-      throw new BadRequestException(
-        `Frequência inválida: ${frequencia}. Valores permitidos: ${Object.values(FrequenciaAgendamento).join(', ')}`,
-      );
-    }
+    // Validações
+    const cliente = await this.clienteService.verificaCliente(clienteId);
+    const servico = await this.servicoService.verificaServico(servicoId);
+    this.validaFrequencia(frequencia);
 
     const parsedDataInicio = dayjs(data_inicio).startOf('day').toDate();
     const parsedDataFim = dayjs(data_fim).endOf('day').toDate();
@@ -69,25 +56,24 @@ export class AgendamentoService {
       );
     }
 
-    // 1. Criar o Agendamento principal
     const agendamentoData: Partial<Agendamento> = {
       cliente: cliente,
       data_inicio: parsedDataInicio,
       data_fim: parsedDataFim,
-      frequencia: frequencia as FrequenciaAgendamento, // Garante que seja null se não fornecido
+      frequencia: frequencia as FrequenciaAgendamentoEnum,
       removido: false,
     };
-    const savedAgendamento = await this.agendamentoDao.create(agendamentoData);
+    const AgendamentoSalvado =
+      await this.agendamentoDao.create(agendamentoData);
 
-    // 2. Gerar e salvar as Ocorrências de Agendamento
     await this.generateOcorrencias(
-      savedAgendamento,
+      AgendamentoSalvado,
       servico,
       meia_diaria,
       valor_extra,
     );
 
-    return savedAgendamento;
+    return AgendamentoSalvado;
   }
 
   /**
@@ -103,57 +89,94 @@ export class AgendamentoService {
     meia_diaria: boolean,
     valor_extra?: number,
   ) {
-    const ocorrenciasToCreate: Partial<OcorrenciaAgendamento>[] = [];
-    let currentDate = agendamento.data_inicio;
-    const endDate = agendamento.data_fim;
+    const ocorrenciasParaCriar: Partial<OcorrenciaAgendamento>[] = [];
+    const dataAtualGeracao = agendamento.data_inicio;
+    const dataFinal = agendamento.data_fim;
 
     // Loop para gerar ocorrências
     while (true) {
-      if (currentDate > endDate) {
-        break; // Sai do loop se a data atual ultrapassar a data de fim
+      if (dataAtualGeracao > dataFinal) {
+        break;
       }
 
-      // Cria a ocorrência para a data atual
-      ocorrenciasToCreate.push({
+      ocorrenciasParaCriar.push({
         agendamento: agendamento,
-        data: new Date(currentDate), // Clona a data para evitar problemas de referência
+        data: new Date(dataAtualGeracao),
         meia_diaria: meia_diaria,
         valor_extra: valor_extra || null,
         status: OcorrenciaStatus.AGENDADO,
         servico: servico,
       });
 
-      // Avança para a próxima data com base na frequência
-      if (agendamento.frequencia === 'semanal') {
-        currentDate.setDate(currentDate.getDate() + 7);
-      } else if (agendamento.frequencia === 'quinzenal') {
-        currentDate.setDate(currentDate.getDate() + 14);
-      } else if (agendamento.frequencia === 'mensal') {
-        currentDate.setMonth(currentDate.getMonth() + 1);
+      if (agendamento.frequencia === FrequenciaAgendamentoEnum.SEMANAL) {
+        dataAtualGeracao.setDate(dataAtualGeracao.getDate() + 7);
+      } else if (
+        agendamento.frequencia === FrequenciaAgendamentoEnum.QUINZENAL
+      ) {
+        dataAtualGeracao.setDate(dataAtualGeracao.getDate() + 14);
+      } else if (agendamento.frequencia === FrequenciaAgendamentoEnum.MENSAL) {
+        dataAtualGeracao.setMonth(dataAtualGeracao.getMonth() + 1);
       } else {
-        // Se não houver frequência (agendamento único), sai do loop após a primeira ocorrência
         break;
       }
     }
 
-    if (ocorrenciasToCreate.length > 0) {
-      await this.ocorrenciaAgendamentoDao.createMany(ocorrenciasToCreate);
+    if (ocorrenciasParaCriar.length > 0) {
+      await this.ocorrenciaAgendamentoDao.createMany(ocorrenciasParaCriar);
     }
   }
 
   findAll() {
-    return this.agendamentoDao.findAll();
+    return this.agendamentoDao.findAllComOcorrencias();
   }
 
   findOne(id: string) {
+    return this.verificaAgendamento(+id);
+  }
+
+  async update(id: string, data: Partial<Agendamento>) {
+    await this.verificaAgendamento(+id);
+
+    const result = await this.agendamentoDao.update(+id, data);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(
+        `Agendamento com ID ${id} não encontrado para atualização.`,
+      );
+    }
+
     return this.agendamentoDao.findOne(+id);
   }
 
-  update(id: string, data: Partial<Agendamento>) {
-    return this.agendamentoDao.update(+id, data);
+  async remove(id: string) {
+    await this.verificaAgendamento(+id);
+    return this.agendamentoDao.remove(+id);
   }
 
-  remove(id: string) {
-    return this.agendamentoDao.remove(+id);
+  /**
+   * Verifica se a frequência é válida dentro do enum FrequenciaAgendamento.
+   * Lança BadRequestException se inválida.
+   */
+  validaFrequencia(frequencia: string | undefined) {
+    if (
+      frequencia &&
+      !Object.values(FrequenciaAgendamentoEnum).includes(
+        frequencia as FrequenciaAgendamentoEnum,
+      )
+    ) {
+      throw new BadRequestException(
+        `Frequência inválida: ${frequencia}. Valores permitidos: ${Object.values(FrequenciaAgendamentoEnum).join(', ')}`,
+      );
+    }
+  }
+
+  async verificaAgendamento(agendamentoId: number): Promise<Agendamento> {
+    const agendamento = await this.agendamentoDao.findOne(agendamentoId);
+    if (!agendamento) {
+      throw new NotFoundException(
+        `Agendamento com ID ${agendamentoId} não encontrado.`,
+      );
+    }
+    return agendamento;
   }
 }

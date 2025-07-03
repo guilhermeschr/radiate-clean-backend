@@ -1,6 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
-import { Cliente } from '../Entities/Cliente.entity';
-import { ClienteService } from '../Services/clienteService';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { OcorrenciaAgendamentoService } from '../Services/ocorrenciaAgendamentoService';
 import { OcorrenciaAgendamento } from '../Entities/OcorrenciaAgendamento.entity';
 
@@ -14,8 +20,8 @@ export class OcorrenciaAgendamentoController {
   }
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAllComAgendamento() {
+    return this.service.findAllComAgendamento();
   }
 
   @Get(':id')
@@ -23,8 +29,16 @@ export class OcorrenciaAgendamentoController {
     return this.service.findOne(id);
   }
 
+  @Get('por-mes/:offset')
+  async listarPorMes(@Param('offset') offset: number) {
+    return this.service.buscarPorMes(Number(offset));
+  }
+
   @Put(':id')
-  update(@Param('id') id: string, @Body() data: Partial<OcorrenciaAgendamento>) {
+  update(
+    @Param('id') id: string,
+    @Body() data: Partial<OcorrenciaAgendamento>,
+  ) {
     return this.service.update(id, data);
   }
 

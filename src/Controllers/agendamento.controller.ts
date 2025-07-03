@@ -1,6 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
-import { Cliente } from '../Entities/Cliente.entity';
-import { ClienteService } from '../Services/clienteService';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { AgendamentoService } from '../Services/agendamentoService';
 import { Agendamento } from '../Entities/Agentamento.entity';
 import { CreateAgendamentoDto } from '../Dtos/createAgendamentoDto';

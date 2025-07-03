@@ -5,12 +5,14 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
-  DeleteDateColumn, OneToMany, JoinColumn,
+  DeleteDateColumn,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Diarista } from './Diarista.entity';
-import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity'; // Ajuste o caminho conforme sua estrutura
+import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity';
 
-@Entity('servicos') // Nome da tabela no banco de dados
+@Entity('servicos')
 export class Servico {
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,27 +21,26 @@ export class Servico {
   descricao: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-  valor_meia_diaria: number; // Valor para meia diária
+  valor_meia_diaria: number;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
-  valor_diaria: number; // Valor para diária inteira
+  valor_diaria: number;
 
-  // Relação ManyToOne com Diarista
-  // Muitos serviços podem pertencer a uma única diarista
-  @ManyToOne(() => Diarista, (diarista) => diarista.servicos, { nullable: false })
+  @ManyToOne(() => Diarista, (diarista) => diarista.servicos, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'diarista_id' })
   diarista: Diarista;
 
-  // Nova relação: Um serviço pode estar associado a muitas ocorrências de agendamento
   @OneToMany(() => OcorrenciaAgendamento, (ocorrencia) => ocorrencia.servico)
   ocorrencias: OcorrenciaAgendamento[];
 
   @CreateDateColumn()
-  created_at: Date; // Creation date
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date; // Last updated date
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date; // Deletion date
+  deleted_at: Date;
 }

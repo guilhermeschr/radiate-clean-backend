@@ -11,10 +11,28 @@ import { OcorrenciaAgendamentoDao } from '../Daos/ocorrenciaAgendamentoDao';
 import { ClienteDao } from '../Daos/clienteDao';
 import { ServicoDao } from '../Daos/servicoDao';
 import { Agendamento } from '../Entities/Agentamento.entity';
+import { ClienteService } from '../Services/clienteService';
+import { ServicoService } from '../Services/servicoService';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Agendamento, Cliente, Diarista, Servico, OcorrenciaAgendamento])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Agendamento,
+      Cliente,
+      Diarista,
+      Servico,
+      OcorrenciaAgendamento,
+    ]),
+  ],
   controllers: [AgendamentoController],
-  providers: [AgendamentoService, AgendamentoDao, OcorrenciaAgendamentoDao, ClienteDao, ServicoDao],
+  providers: [
+    AgendamentoService,
+    AgendamentoDao,
+    OcorrenciaAgendamentoDao,
+    ClienteDao,
+    ServicoDao,
+    ClienteService,
+    ServicoService,
+  ],
 })
 export class AgendamentoModule {}

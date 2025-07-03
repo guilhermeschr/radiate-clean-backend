@@ -1,37 +1,45 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { Cliente } from './Cliente.entity'; // Ajuste o caminho conforme sua estrutura
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
+import { Cliente } from './Cliente.entity';
 import { OcorrenciaAgendamento } from './OcorrenciaAgendamento.entity';
-import { FrequenciaAgendamento } from '../Enum/FrequenciaOcorrenciaEnum'; // Importe a OcorrenciaAgendamento
+import { FrequenciaAgendamentoEnum } from '../Enum/FrequenciaOcorrenciaEnum';
 
-@Entity('agendamentos') // Nome da tabela no banco de dados
+@Entity('agendamentos')
 export class Agendamento {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Relacionamento ManyToOne com Cliente
-  // Muitos agendamentos podem pertencer a um único cliente
-  @ManyToOne(() => Cliente, (cliente) => cliente.agendamentos, { nullable: false })
+  @ManyToOne(() => Cliente, (cliente) => cliente.agendamentos, {
+    nullable: false,
+  })
   @JoinColumn({ name: 'cliente_id' })
-  cliente: Cliente; // O documento menciona cliente_id, então precisamos da relação com Cliente
+  cliente: Cliente;
 
-  @Column({ type: 'date', nullable: false }) // Data de início do agendamento (rotina)
+  @Column({ type: 'date', nullable: false })
   data_inicio: Date;
 
-  @Column({ type: 'date', nullable: false}) // Data de fim do agendamento (rotina) - pode ser nula para agendamentos contínuos
+  @Column({ type: 'date', nullable: false })
   data_fim: Date;
 
   @Column({
     type: 'enum',
-    enum: FrequenciaAgendamento,
+    enum: FrequenciaAgendamentoEnum,
     nullable: false,
   })
-  frequencia: FrequenciaAgendamento;
+  frequencia: FrequenciaAgendamentoEnum;
 
-  @Column({ default: false }) // Indica se o agendamento foi removido (soft delete)
+  @Column({ default: false })
   removido: boolean;
 
-  // Relacionamento OneToMany com OcorrenciaAgendamento
-  // Um agendamento pode ter muitas ocorrências (instâncias)
-  @OneToMany(() => OcorrenciaAgendamento, (ocorrencia) => ocorrencia.agendamento)
+  @OneToMany(
+    () => OcorrenciaAgendamento,
+    (ocorrencia) => ocorrencia.agendamento,
+  )
   ocorrencias: OcorrenciaAgendamento[];
 }

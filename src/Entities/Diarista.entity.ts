@@ -10,7 +10,7 @@ import {
 import { Cliente } from './Cliente.entity';
 import { Servico } from './Servico.Entity';
 
-@Entity()
+@Entity('diaristas')
 export class Diarista {
   @PrimaryGeneratedColumn()
   id: number;
@@ -28,21 +28,20 @@ export class Diarista {
   token: string;
 
   @Column({ name: 'horario_notificacao' })
-  horarioNotificacao: String;
+  horarioNotificacao: string;
 
   @OneToMany(() => Cliente, (cliente) => cliente.diarista)
-  clientes: Cliente[]; // Uma diarista pode ter vários clientes
+  clientes: Cliente[];
 
-  // Nova relação: Uma diarista pode ter vários serviços
   @OneToMany(() => Servico, (servico) => servico.diarista)
   servicos: Servico[];
 
   @CreateDateColumn()
-  created_at: Date; // Creation date
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated_at: Date; // Last updated date
+  updated_at: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date; // Deletion date
+  deleted_at: Date;
 }

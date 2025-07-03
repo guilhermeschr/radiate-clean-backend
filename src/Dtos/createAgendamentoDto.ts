@@ -1,5 +1,14 @@
-import { IsDateString, IsInt, IsBoolean, IsNumber, IsOptional, IsString, IsNotEmpty, IsEnum } from 'class-validator';
-import { OcorrenciaStatus } from '../Enum/OcorrenciaStatusEnum';
+import {
+  IsDateString,
+  IsInt,
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+} from 'class-validator';
+import { FrequenciaAgendamentoEnum } from '../Enum/FrequenciaOcorrenciaEnum';
 
 export class CreateAgendamentoDto {
   @IsInt()
@@ -8,15 +17,17 @@ export class CreateAgendamentoDto {
 
   @IsDateString()
   @IsNotEmpty()
-  data_inicio: string; // String para receber do frontend
+  data_inicio: string;
 
   @IsDateString()
   @IsNotEmpty()
-  data_fim?: string; // String para receber do frontend
+  data_fim?: string;
 
-  @IsEnum(OcorrenciaStatus, { message: 'Frequência inválida' })
+  @IsEnum(FrequenciaAgendamentoEnum, {
+    message: 'Frequência inválida. Use: semanal, quinzenal ou mensal.',
+  })
   @IsString()
-  frequencia?: 'semanal' | 'quinzenal' | 'mensal'; // Tipagem mais específica
+  frequencia?: FrequenciaAgendamentoEnum;
 
   @IsInt()
   @IsNotEmpty()
@@ -30,4 +41,3 @@ export class CreateAgendamentoDto {
   @IsNumber()
   valor_extra?: number;
 }
-

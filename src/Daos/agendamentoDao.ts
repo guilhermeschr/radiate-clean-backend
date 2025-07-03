@@ -16,12 +16,33 @@ export class AgendamentoDao {
     return this.AgendamentoRepository.save(agendamento);
   }
 
+  async findAllComOcorrencias(): Promise<Agendamento[]> {
+    return this.AgendamentoRepository.find({
+      relations: ['ocorrencias', 'ocorrencias.servico', 'cliente'],
+      order: {
+        data_inicio: 'ASC',
+        ocorrencias: {
+          data: 'ASC',
+        },
+      },
+    });
+  }
+
   findAll() {
     return this.AgendamentoRepository.find();
   }
 
-  findOne(id: number) {
-    return this.AgendamentoRepository.findOneBy({ id });
+  async findOne(id: number) {
+    return this.AgendamentoRepository.findOne({
+      where: { id },
+      relations: ['ocorrencias', 'ocorrencias.servico'],
+      order: {
+        data_inicio: 'ASC',
+        ocorrencias: {
+          data: 'ASC',
+        },
+      },
+    });
   }
 
   update(id: number, data: Partial<Agendamento>) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { OcorrenciaAgendamento } from '../Entities/OcorrenciaAgendamento.entity';
 
 @Injectable()
@@ -11,13 +11,40 @@ export class OcorrenciaAgendamentoDao {
   ) {}
 
   create(data: Partial<OcorrenciaAgendamento>) {
-    const ocorrenciaAgendamento = this.OcorrenciaAgendamentoRepository.create(data);
+    const ocorrenciaAgendamento =
+      this.OcorrenciaAgendamentoRepository.create(data);
     return this.OcorrenciaAgendamentoRepository.save(ocorrenciaAgendamento);
   }
 
-  async createMany(data: Partial<OcorrenciaAgendamento>[]): Promise<OcorrenciaAgendamento[]> {
+  async createMany(
+    data: Partial<OcorrenciaAgendamento>[],
+  ): Promise<OcorrenciaAgendamento[]> {
     const ocorrencias = this.OcorrenciaAgendamentoRepository.create(data);
     return this.OcorrenciaAgendamentoRepository.save(ocorrencias);
+  }
+
+  async buscarPorPeriodo(
+    inicio: Date,
+    fim: Date,
+  ): Promise<OcorrenciaAgendamento[]> {
+    return this.OcorrenciaAgendamentoRepository.find({
+      where: {
+        data: Between(inicio, fim),
+      },
+      relations: ['agendamento', 'servico', 'agendamento.cliente'],
+      order: {
+        data: 'ASC',
+      },
+    });
+  }
+
+  async findAllComAgendamento(): Promise<OcorrenciaAgendamento[]> {
+    return this.OcorrenciaAgendamentoRepository.find({
+      relations: ['agendamento', 'servico', 'agendamento.cliente'],
+      order: {
+        data: 'ASC',
+      },
+    });
   }
 
   findAll() {
